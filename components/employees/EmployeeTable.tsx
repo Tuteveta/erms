@@ -34,7 +34,7 @@ interface EmployeeTableProps {
 
 export function EmployeeTable({ employees, onDelete, loading }: EmployeeTableProps) {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Inactive">("All");
+  const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "OnLeave" | "Inactive">("All");
   const { can } = usePermissions();
 
   const filtered = employees.filter((e) => {
@@ -70,7 +70,7 @@ export function EmployeeTable({ employees, onDelete, loading }: EmployeeTablePro
           />
         </div>
         <div className="flex gap-1 border rounded-md p-1">
-          {(["All", "Active", "Inactive"] as const).map((s) => (
+          {(["All", "Active", "OnLeave", "Inactive"] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
@@ -80,7 +80,7 @@ export function EmployeeTable({ employees, onDelete, loading }: EmployeeTablePro
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
-              {s}
+              {s === "OnLeave" ? "On Leave" : s}
             </button>
           ))}
         </div>
@@ -131,8 +131,14 @@ export function EmployeeTable({ employees, onDelete, loading }: EmployeeTablePro
                   <TableCell className="text-sm">{employee.Department}</TableCell>
                   <TableCell className="text-sm">{employee.Position}</TableCell>
                   <TableCell>
-                    <Badge variant={employee.Status === "Active" ? "success" : "secondary"}>
-                      {employee.Status}
+                    <Badge
+                      variant={
+                        employee.Status === "Active" ? "success" :
+                        employee.Status === "OnLeave" ? "outline" : "secondary"
+                      }
+                      className={employee.Status === "OnLeave" ? "border-amber-400 text-amber-600 bg-amber-50" : ""}
+                    >
+                      {employee.Status === "OnLeave" ? "On Leave" : employee.Status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">

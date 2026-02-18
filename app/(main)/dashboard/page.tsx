@@ -5,12 +5,13 @@ import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { OnLeavePanel } from "@/components/dashboard/OnLeavePanel";
 import { employeeService } from "@/services/employeeService";
 import { documentService } from "@/services/documentService";
-import { Users, UserCheck, UserX, FileText } from "lucide-react";
+import { Users, UserCheck, UserX, FileText, CalendarClock } from "lucide-react";
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, onLeave: 0 });
   const [totalDocs, setTotalDocs] = useState(0);
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function DashboardPage() {
 
       <div className="flex-1 p-6 space-y-6 overflow-y-auto">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <StatsCard
             title="Total Employees"
             value={stats.total}
@@ -41,6 +42,14 @@ export default function DashboardPage() {
             icon={UserCheck}
             iconColor="text-green-600"
             iconBg="bg-green-50"
+          />
+          <StatsCard
+            title="On Leave"
+            value={stats.onLeave}
+            description="Currently on leave"
+            icon={CalendarClock}
+            iconColor="text-amber-600"
+            iconBg="bg-amber-50"
           />
           <StatsCard
             title="Inactive Employees"
@@ -60,15 +69,18 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Bottom Grid */}
+        {/* Leave Monitoring + Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <RecentActivity />
+            <OnLeavePanel />
           </div>
           <div>
             <QuickActions />
           </div>
         </div>
+
+        {/* Recent Activity */}
+        <RecentActivity />
       </div>
     </div>
   );

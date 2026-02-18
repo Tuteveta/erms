@@ -10,8 +10,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Building2,
 } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -57,14 +57,18 @@ export function Sidebar() {
 
   return (
     <aside className="relative z-10 flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground shadow-[1px_0_20px_rgba(0,0,0,0.25)]">
-      {/* Logo & Brand */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border/60">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/30">
-          <Building2 className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <p className="text-sm font-bold leading-none text-white tracking-wide">ERMS</p>
-          <p className="text-xs text-sidebar-foreground/50 mt-0.5">HR Management</p>
+      {/* Logo */}
+      <div className="flex items-center justify-center px-4 py-4 border-b border-sidebar-border/60">
+        <div className="bg-white rounded-lg px-3 py-2">
+          <Image
+            src="/ict-logo.png"
+            alt="ICT Logo"
+            width={140}
+            height={40}
+            className="h-10 object-contain"
+            style={{ width: "auto" }}
+            priority
+          />
         </div>
       </div>
 

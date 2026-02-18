@@ -16,10 +16,12 @@ const schema = a.schema({
       Position: a.string().required(),
       Email: a.email().required(),
       Phone: a.phone(),
-      Status: a.enum(["Active", "Inactive"]),
+      Status: a.enum(["Active", "Inactive", "OnLeave"]),
       CreatedBy: a.string(),
       // Documents linked via EmployeeID
       documents: a.hasMany("EmployeeDocument", "EmployeeID"),
+      // Leave records linked via EmployeeID
+      leaves: a.hasMany("EmployeeLeave", "EmployeeID"),
     })
     .authorization((allow) => [
       allow.groups(["SuperAdmin", "HRManager"]).to(["create", "read", "update", "delete"]),
@@ -36,6 +38,26 @@ const schema = a.schema({
       FileSize: a.integer(),
       Description: a.string(),
       UploadedBy: a.string(),
+      // Belongs to Employee
+      employee: a.belongsTo("Employee", "EmployeeID"),
+    })
+    .authorization((allow) => [
+      allow.groups(["SuperAdmin", "HRManager"]).to(["create", "read", "update", "delete"]),
+      allow.groups(["HROfficer"]).to(["read"]),
+    ]),
+
+  // ── Employee Leave Records ─────────────────────────────────────────────
+  EmployeeLeave: a
+    .model({
+      LeaveID: a.id().required(),
+      EmployeeID: a.string().required(),
+      LeaveType: a.enum(["Sick", "Annual", "Maternity", "Paternity", "Emergency", "Other"]),
+      StartDate: a.date().required(),
+      EndDate: a.date().required(),
+      Reason: a.string(),
+      Status: a.enum(["Pending", "Approved", "Rejected"]),
+      ApprovedBy: a.string(),
+      CreatedBy: a.string(),
       // Belongs to Employee
       employee: a.belongsTo("Employee", "EmployeeID"),
     })

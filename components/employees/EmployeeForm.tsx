@@ -121,6 +121,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, submitLabel = "S
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Active">Active</SelectItem>
+            <SelectItem value="OnLeave">On Leave</SelectItem>
             <SelectItem value="Inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>

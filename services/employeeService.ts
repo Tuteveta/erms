@@ -79,11 +79,12 @@ export const employeeService = {
     );
   },
 
-  async getStats(): Promise<{ total: number; active: number; inactive: number }> {
+  async getStats(): Promise<{ total: number; active: number; inactive: number; onLeave: number }> {
     const all = await employeeService.getAll();
     const total = all.length;
     const active = all.filter((e) => e.Status === "Active").length;
-    const inactive = total - active;
-    return { total, active, inactive };
+    const onLeave = all.filter((e) => e.Status === "OnLeave").length;
+    const inactive = all.filter((e) => e.Status === "Inactive").length;
+    return { total, active, inactive, onLeave };
   },
 };

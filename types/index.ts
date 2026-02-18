@@ -2,7 +2,13 @@
 export type UserRole = "SuperAdmin" | "HRManager" | "HROfficer";
 
 // Employee Status
-export type EmployeeStatus = "Active" | "Inactive";
+export type EmployeeStatus = "Active" | "Inactive" | "OnLeave";
+
+// Leave Types
+export type LeaveType = "Sick" | "Annual" | "Maternity" | "Paternity" | "Emergency" | "Other";
+
+// Leave Status
+export type LeaveStatus = "Pending" | "Approved" | "Rejected";
 
 // Allowed Actions for HR Officers
 export type AllowedAction =
@@ -39,6 +45,31 @@ export interface EmployeeDocument {
   UploadedAt: string;
   UploadedBy: string;
   Description?: string;
+}
+
+// Employee Leave Record
+export interface EmployeeLeave {
+  id: string; // AppSync primary key
+  LeaveID: string;
+  EmployeeID: string;
+  LeaveType: LeaveType;
+  StartDate: string; // YYYY-MM-DD
+  EndDate: string;   // YYYY-MM-DD
+  Reason?: string;
+  Status: LeaveStatus;
+  ApprovedBy?: string;
+  CreatedBy?: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+// Leave Form Input
+export interface LeaveFormData {
+  LeaveType: LeaveType;
+  StartDate: string;
+  EndDate: string;
+  Reason?: string;
+  Status: LeaveStatus;
 }
 
 // Permission Set

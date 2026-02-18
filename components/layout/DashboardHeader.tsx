@@ -136,8 +136,13 @@ const STARS = [
   { top: "50%", right: "20%",  size: 2,   delay: "2.1s",  dur: "2.6s" },
 ];
 
+interface DashboardHeaderProps {
+  pageTitle?: string;
+  pageDescription?: string;
+}
+
 // ── Component ────────────────────────────────────────────────
-export function DashboardHeader() {
+export function DashboardHeader({ pageTitle, pageDescription }: DashboardHeaderProps = {}) {
   const { user } = useAuth();
   const [slot, setSlot] = useState<TimeSlot | null>(null);
   const [day, setDay] = useState("");
@@ -329,6 +334,24 @@ export function DashboardHeader() {
           )}
         </div>
       </div>
+
+      {/* ── Page context strip ───────────────────────────────── */}
+      {pageTitle && (
+        <div
+          className="relative z-10 flex items-center gap-2 px-6 pb-4"
+          style={{ marginTop: "-8px" }}
+        >
+          <span className={cn("text-sm font-bold tracking-tight", cfg.textPrimary)}>
+            {pageTitle}
+          </span>
+          {pageDescription && (
+            <>
+              <span className={cn("text-xs opacity-40", cfg.textPrimary)}>·</span>
+              <span className={cn("text-xs", cfg.textSecondary)}>{pageDescription}</span>
+            </>
+          )}
+        </div>
+      )}
     </header>
   );
 }

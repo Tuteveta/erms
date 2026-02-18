@@ -1,154 +1,88 @@
-import { Employee, EmployeeFormData, EmployeeDocument } from "@/types";
+import { Employee, EmployeeFormData } from "@/types";
 import { generateID } from "@/lib/utils";
+import { client } from "@/lib/amplify-client";
 
-// Mock data for development — replace with Amplify DataStore/API calls in production
-const MOCK_EMPLOYEES: Employee[] = [
-  {
-    EmployeeID: "EMP-001",
-    FirstName: "James",
-    LastName: "Okafor",
-    Department: "Human Resources",
-    Position: "HR Director",
-    Email: "j.okafor@org.gov",
-    Phone: "+234-801-234-5678",
-    Status: "Active",
-    CreatedAt: "2023-01-15T08:00:00Z",
-    UpdatedAt: "2024-06-01T10:30:00Z",
-    CreatedBy: "admin@org.gov",
-  },
-  {
-    EmployeeID: "EMP-002",
-    FirstName: "Amina",
-    LastName: "Bello",
-    Department: "Finance",
-    Position: "Senior Accountant",
-    Email: "a.bello@org.gov",
-    Phone: "+234-802-345-6789",
-    Status: "Active",
-    CreatedAt: "2023-02-20T09:00:00Z",
-    UpdatedAt: "2024-05-15T14:00:00Z",
-    CreatedBy: "hr@org.gov",
-  },
-  {
-    EmployeeID: "EMP-003",
-    FirstName: "Chukwuemeka",
-    LastName: "Eze",
-    Department: "Information Technology",
-    Position: "Systems Administrator",
-    Email: "c.eze@org.gov",
-    Phone: "+234-803-456-7890",
-    Status: "Active",
-    CreatedAt: "2023-03-10T10:00:00Z",
-    UpdatedAt: "2024-04-20T11:00:00Z",
-    CreatedBy: "hr@org.gov",
-  },
-  {
-    EmployeeID: "EMP-004",
-    FirstName: "Fatima",
-    LastName: "Musa",
-    Department: "Legal",
-    Position: "Legal Officer",
-    Email: "f.musa@org.gov",
-    Phone: "+234-804-567-8901",
-    Status: "Active",
-    CreatedAt: "2023-04-05T08:30:00Z",
-    UpdatedAt: "2024-03-10T09:00:00Z",
-    CreatedBy: "hr@org.gov",
-  },
-  {
-    EmployeeID: "EMP-005",
-    FirstName: "Tunde",
-    LastName: "Adeyemi",
-    Department: "Operations",
-    Position: "Operations Manager",
-    Email: "t.adeyemi@org.gov",
-    Phone: "+234-805-678-9012",
-    Status: "Inactive",
-    CreatedAt: "2022-11-01T07:00:00Z",
-    UpdatedAt: "2024-01-15T16:00:00Z",
-    CreatedBy: "admin@org.gov",
-  },
-  {
-    EmployeeID: "EMP-006",
-    FirstName: "Ngozi",
-    LastName: "Okonkwo",
-    Department: "Audit",
-    Position: "Internal Auditor",
-    Email: "n.okonkwo@org.gov",
-    Phone: "+234-806-789-0123",
-    Status: "Active",
-    CreatedAt: "2023-06-15T09:00:00Z",
-    UpdatedAt: "2024-06-10T12:00:00Z",
-    CreatedBy: "hr@org.gov",
-  },
-];
+// Map an AppSync Employee record to our Employee type
+function mapEmployee(item: any): Employee {
+  return {
+    EmployeeID: item.EmployeeID,
+    FirstName: item.FirstName,
+    LastName: item.LastName,
+    Department: item.Department,
+    Position: item.Position,
+    Email: item.Email,
+    Phone: item.Phone ?? undefined,
+    Status: item.Status ?? "Active",
+    CreatedAt: item.createdAt ?? new Date().toISOString(),
+    UpdatedAt: item.updatedAt ?? new Date().toISOString(),
+    CreatedBy: item.CreatedBy ?? undefined,
+  };
+}
 
-let employees = [...MOCK_EMPLOYEES];
+// Find the AppSync primary key (id) for a given EmployeeID
+async function getDynamoId(employeeId: string): Promise<string | null> {
+  const { data } = await client.models.Employee.list({
+    filter: { EmployeeID: { eq: employeeId } },
+  });
+  return data && data.length > 0 ? data[0].id : null;
+}
 
 export const employeeService = {
   async getAll(): Promise<Employee[]> {
-    // TODO: Replace with Amplify API call
-    // const { data } = await client.models.Employee.list();
-    return Promise.resolve([...employees]);
+    const { data } = await client.models.Employee.list();
+    return (data ?? []).map(mapEmployee);
   },
 
-  async getById(id: string): Promise<Employee | null> {
-    // TODO: Replace with Amplify API call
-    // const { data } = await client.models.Employee.get({ EmployeeID: id });
-    const employee = employees.find((e) => e.EmployeeID === id);
-    return Promise.resolve(employee || null);
+  async getById(employeeId: string): Promise<Employee | null> {
+    const { data } = await client.models.Employee.list({
+      filter: { EmployeeID: { eq: employeeId } },
+    });
+    if (!data || data.length === 0) return null;
+    return mapEmployee(data[0]);
   },
 
   async create(formData: EmployeeFormData, createdBy: string): Promise<Employee> {
-    // TODO: Replace with Amplify API call
-    const newEmployee: Employee = {
-      ...formData,
+    const { data } = await client.models.Employee.create({
       EmployeeID: generateID(),
-      CreatedAt: new Date().toISOString(),
-      UpdatedAt: new Date().toISOString(),
-      CreatedBy: createdBy,
-    };
-    employees = [...employees, newEmployee];
-    return Promise.resolve(newEmployee);
-  },
-
-  async update(id: string, formData: Partial<EmployeeFormData>): Promise<Employee> {
-    // TODO: Replace with Amplify API call
-    const index = employees.findIndex((e) => e.EmployeeID === id);
-    if (index === -1) throw new Error("Employee not found");
-    const updated: Employee = {
-      ...employees[index],
       ...formData,
-      UpdatedAt: new Date().toISOString(),
-    };
-    employees[index] = updated;
-    return Promise.resolve(updated);
+      CreatedBy: createdBy,
+    });
+    if (!data) throw new Error("Failed to create employee");
+    return mapEmployee(data);
   },
 
-  async delete(id: string): Promise<void> {
-    // TODO: Replace with Amplify API call
-    employees = employees.filter((e) => e.EmployeeID !== id);
-    return Promise.resolve();
+  async update(employeeId: string, formData: Partial<EmployeeFormData>): Promise<Employee> {
+    const id = await getDynamoId(employeeId);
+    if (!id) throw new Error("Employee not found");
+    const { data } = await client.models.Employee.update({ id, ...formData });
+    if (!data) throw new Error("Failed to update employee");
+    return mapEmployee(data);
+  },
+
+  async delete(employeeId: string): Promise<void> {
+    const id = await getDynamoId(employeeId);
+    if (!id) return;
+    await client.models.Employee.delete({ id });
   },
 
   async search(query: string): Promise<Employee[]> {
+    const all = await employeeService.getAll();
     const q = query.toLowerCase();
-    return Promise.resolve(
-      employees.filter(
-        (e) =>
-          e.FirstName.toLowerCase().includes(q) ||
-          e.LastName.toLowerCase().includes(q) ||
-          e.Email.toLowerCase().includes(q) ||
-          e.Department.toLowerCase().includes(q) ||
-          e.Position.toLowerCase().includes(q) ||
-          e.EmployeeID.toLowerCase().includes(q)
-      )
+    return all.filter(
+      (e) =>
+        e.FirstName.toLowerCase().includes(q) ||
+        e.LastName.toLowerCase().includes(q) ||
+        e.Email.toLowerCase().includes(q) ||
+        e.Department.toLowerCase().includes(q) ||
+        e.Position.toLowerCase().includes(q) ||
+        e.EmployeeID.toLowerCase().includes(q)
     );
   },
 
-  getStats() {
-    const total = employees.length;
-    const active = employees.filter((e) => e.Status === "Active").length;
+  async getStats(): Promise<{ total: number; active: number; inactive: number }> {
+    const all = await employeeService.getAll();
+    const total = all.length;
+    const active = all.filter((e) => e.Status === "Active").length;
     const inactive = total - active;
     return { total, active, inactive };
   },

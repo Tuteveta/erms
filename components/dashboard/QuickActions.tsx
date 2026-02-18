@@ -14,28 +14,28 @@ export function QuickActions() {
       label: "Add Employee",
       href: "/employees/new",
       icon: UserPlus,
-      color: "bg-blue-50 text-blue-600 hover:bg-blue-100",
+      color: "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-md",
       show: can("CREATE_EMPLOYEE"),
     },
     {
       label: "View Employees",
       href: "/employees",
       icon: Users,
-      color: "bg-green-50 text-green-600 hover:bg-green-100",
+      color: "bg-green-50 text-green-600 hover:bg-green-100 hover:shadow-md",
       show: can("VIEW_EMPLOYEE"),
     },
     {
       label: "Generate Report",
       href: "/reports",
       icon: FileText,
-      color: "bg-orange-50 text-orange-600 hover:bg-orange-100",
+      color: "bg-orange-50 text-orange-600 hover:bg-orange-100 hover:shadow-md",
       show: can("GENERATE_REPORTS"),
     },
     {
       label: "Administration",
       href: "/admin",
       icon: Settings,
-      color: "bg-purple-50 text-purple-600 hover:bg-purple-100",
+      color: "bg-purple-50 text-purple-600 hover:bg-purple-100 hover:shadow-md",
       show: isAtLeast("HRManager"),
     },
   ].filter((a) => a.show);
@@ -52,9 +52,9 @@ export function QuickActions() {
             <Link
               key={action.href}
               href={action.href}
-              className={`flex flex-col items-center gap-2 rounded-lg p-4 text-center transition-colors ${action.color}`}
+              className={`flex flex-col items-center gap-2 rounded-lg p-4 text-center font-medium border border-transparent transition-all duration-150 hover:scale-[1.02] ${action.color}`}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-6 w-6" />
               <span className="text-xs font-medium">{action.label}</span>
             </Link>
           );

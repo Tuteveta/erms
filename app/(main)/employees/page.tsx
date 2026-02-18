@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
+import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmployeeTable } from "@/components/employees/EmployeeTable";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ export default function EmployeesPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Employees" description="Manage all employee records" />
+      <DashboardHeader pageTitle="Employees" pageDescription="Manage all employee records" />
       <div className="flex-1 p-6">
         <PageHeader
           title="Employee Records"

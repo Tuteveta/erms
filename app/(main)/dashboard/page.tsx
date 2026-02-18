@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
@@ -10,8 +10,13 @@ import { documentService } from "@/services/documentService";
 import { Users, UserCheck, UserX, FileText } from "lucide-react";
 
 export default function DashboardPage() {
-  const stats = employeeService.getStats();
-  const totalDocs = documentService.getTotalCount();
+  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
+  const [totalDocs, setTotalDocs] = useState(0);
+
+  useEffect(() => {
+    employeeService.getStats().then(setStats);
+    documentService.getTotalCount().then(setTotalDocs);
+  }, []);
 
   return (
     <div className="flex flex-col h-full">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Header } from "@/components/layout/Header";
+import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,7 +71,7 @@ export default function AdminPage() {
   if (!isAtLeast("HRManager")) {
     return (
       <div className="flex flex-col h-full">
-        <Header title="Administration" />
+        <DashboardHeader pageTitle="Administration" />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-3">
             <ShieldAlert className="h-12 w-12 text-muted-foreground mx-auto" />
@@ -129,7 +129,7 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Administration" description="Manage HR Officers and permissions" />
+      <DashboardHeader pageTitle="Administration" pageDescription="Manage HR Officers and permissions" />
       <div className="flex-1 p-6 space-y-6">
         <PageHeader
           title="System Administration"

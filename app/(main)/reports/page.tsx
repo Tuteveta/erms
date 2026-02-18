@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Header } from "@/components/layout/Header";
+import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +50,7 @@ export default function ReportsPage() {
   if (!can("GENERATE_REPORTS")) {
     return (
       <div className="flex flex-col h-full">
-        <Header title="Reports" />
+        <DashboardHeader pageTitle="Reports" />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-3">
             <ShieldAlert className="h-12 w-12 text-muted-foreground mx-auto" />
@@ -63,7 +63,7 @@ export default function ReportsPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Reports" description="Generate and export employee reports" />
+      <DashboardHeader pageTitle="Reports" pageDescription="Generate and export employee reports" />
       <div className="flex-1 p-6 space-y-6">
         <PageHeader
           title="Employee Reports"

@@ -27,9 +27,6 @@ export function useAuth() {
   const signIn = useCallback(
     async (email: string, password: string) => {
       const authUser = await authService.signIn(email, password);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("erms_user", JSON.stringify(authUser));
-      }
       setUser(authUser);
       router.push("/dashboard");
       return authUser;
@@ -37,14 +34,32 @@ export function useAuth() {
     [router]
   );
 
+  const completeNewPassword = useCallback(
+    async (newPassword: string) => {
+      const authUser = await authService.completeNewPassword(newPassword);
+      setUser(authUser);
+      router.push("/dashboard");
+      return authUser;
+    },
+    [router]
+  );
+
+  const forgotPassword = useCallback(async (email: string) => {
+    await authService.forgotPassword(email);
+  }, []);
+
+  const confirmForgotPassword = useCallback(
+    async (email: string, code: string, newPassword: string) => {
+      await authService.confirmForgotPassword(email, code, newPassword);
+    },
+    []
+  );
+
   const signOut = useCallback(async () => {
     await authService.signOut();
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("erms_user");
-    }
     setUser(null);
     router.push("/login");
   }, [router]);
 
-  return { user, loading, signIn, signOut };
+  return { user, loading, signIn, completeNewPassword, forgotPassword, confirmForgotPassword, signOut };
 }

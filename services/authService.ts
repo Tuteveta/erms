@@ -1,72 +1,97 @@
-import { AuthUser, UserRole, AllowedAction } from "@/types";
+import {
+  signIn as amplifySignIn,
+  signOut as amplifySignOut,
+  confirmSignIn,
+  getCurrentUser,
+  fetchUserAttributes,
+  fetchAuthSession,
+  resetPassword,
+  confirmResetPassword,
+} from "aws-amplify/auth";
+import { AuthUser, AllowedAction } from "@/types";
 import { mapGroupToRole } from "@/lib/auth";
-
-// Mock HR Officers with assigned permissions
-let mockHROfficers = [
-  {
-    UserID: "USR-003",
-    Email: "officer1@org.gov",
-    Name: "Kemi Adeleke",
-    AllowedActions: ["VIEW_EMPLOYEE", "UPLOAD_DOCUMENTS"] as AllowedAction[],
-    CreatedAt: "2024-01-10T08:00:00Z",
-    AssignedBy: "manager@org.gov",
-  },
-  {
-    UserID: "USR-004",
-    Email: "officer2@org.gov",
-    Name: "Seun Bakare",
-    AllowedActions: ["VIEW_EMPLOYEE", "CREATE_EMPLOYEE", "EDIT_EMPLOYEE"] as AllowedAction[],
-    CreatedAt: "2024-02-15T09:00:00Z",
-    AssignedBy: "manager@org.gov",
-  },
-];
+import { client } from "@/lib/amplify-client";
 
 export const authService = {
-  // Sign in via Cognito (wrapper)
   async signIn(email: string, password: string): Promise<AuthUser> {
-    // TODO: Replace with Amplify Auth.signIn
-    // const { isSignedIn, nextStep } = await signIn({ username: email, password });
+    const { isSignedIn, nextStep } = await amplifySignIn({ username: email, password });
 
-    // Mock implementation for development
-    if (email === "admin@org.gov" && password === "Admin@1234") {
-      return { userId: "USR-001", email, name: "Super Admin", role: "SuperAdmin" };
+    if (nextStep.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {
+      const err = new Error("A new password is required for your account.");
+      (err as any).code = "NEW_PASSWORD_REQUIRED";
+      throw err;
     }
-    if (email === "manager@org.gov" && password === "Manager@1234") {
-      return { userId: "USR-002", email, name: "HR Manager", role: "HRManager" };
-    }
-    if (email === "officer1@org.gov" && password === "Officer@1234") {
-      const officer = mockHROfficers.find((o) => o.Email === email);
-      return {
-        userId: "USR-003",
-        email,
-        name: officer?.Name,
-        role: "HROfficer",
-        allowedActions: officer?.AllowedActions,
-      };
-    }
-    throw new Error("Invalid credentials. Please check your email and password.");
+
+    if (!isSignedIn) throw new Error("Sign in failed. Please try again.");
+    return authService.getCurrentUser() as Promise<AuthUser>;
+  },
+
+  async completeNewPassword(newPassword: string): Promise<AuthUser> {
+    const { isSignedIn } = await confirmSignIn({ challengeResponse: newPassword });
+    if (!isSignedIn) throw new Error("Failed to set new password. Please try again.");
+    return authService.getCurrentUser() as Promise<AuthUser>;
   },
 
   async signOut(): Promise<void> {
-    // TODO: Replace with Amplify Auth.signOut
-    // await signOut();
-    return Promise.resolve();
+    await amplifySignOut();
   },
 
   async getCurrentUser(): Promise<AuthUser | null> {
-    // TODO: Replace with Amplify Auth.getCurrentUser
-    // const user = await getCurrentUser();
-    const stored = typeof window !== "undefined" ? localStorage.getItem("erms_user") : null;
-    if (!stored) return null;
     try {
-      return JSON.parse(stored) as AuthUser;
+      const cognitoUser = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
+      const session = await fetchAuthSession();
+      const groups =
+        (session.tokens?.idToken?.payload["cognito:groups"] as string[]) ?? [];
+      const role = mapGroupToRole(groups);
+
+      let allowedActions: AllowedAction[] | undefined;
+      if (role === "HROfficer") {
+        const email = attributes.email ?? "";
+        const { data: permissions } = await client.models.Permission.list({
+          filter: { Email: { eq: email } },
+        });
+        if (permissions && permissions.length > 0) {
+          allowedActions =
+            (permissions[0].AllowedActions?.filter(Boolean) as AllowedAction[]) ?? [];
+        }
+      }
+
+      return {
+        userId: cognitoUser.userId,
+        email: attributes.email ?? cognitoUser.username,
+        name: attributes.name ?? attributes.email ?? cognitoUser.username,
+        role,
+        allowedActions,
+      };
     } catch {
       return null;
     }
   },
 
+  async forgotPassword(email: string): Promise<void> {
+    await resetPassword({ username: email });
+  },
+
+  async confirmForgotPassword(
+    email: string,
+    code: string,
+    newPassword: string
+  ): Promise<void> {
+    await confirmResetPassword({ username: email, confirmationCode: code, newPassword });
+  },
+
   async getHROfficers() {
-    return Promise.resolve([...mockHROfficers]);
+    const { data } = await client.models.Permission.list();
+    return (data ?? []).map((p) => ({
+      UserID: p.UserID,
+      Email: p.Email,
+      Name: p.Name ?? p.Email,
+      AllowedActions:
+        (p.AllowedActions?.filter(Boolean) as AllowedAction[]) ?? [],
+      CreatedAt: p.createdAt ?? new Date().toISOString(),
+      AssignedBy: p.AssignedBy ?? "",
+    }));
   },
 
   async createHROfficer(
@@ -75,29 +100,41 @@ export const authService = {
     allowedActions: AllowedAction[],
     assignedBy: string
   ) {
-    // TODO: Replace with Cognito createUser + assign group
-    const newOfficer = {
-      UserID: `USR-${Date.now()}`,
+    const { data } = await client.models.Permission.create({
+      RoleID: `ROLE-${Date.now()}`,
+      UserID: email,
       Email: email,
       Name: name,
       AllowedActions: allowedActions,
-      CreatedAt: new Date().toISOString(),
+      AssignedBy: assignedBy,
+    });
+    return {
+      UserID: data?.UserID ?? email,
+      Email: email,
+      Name: name,
+      AllowedActions: allowedActions,
+      CreatedAt: data?.createdAt ?? new Date().toISOString(),
       AssignedBy: assignedBy,
     };
-    mockHROfficers = [...mockHROfficers, newOfficer];
-    return Promise.resolve(newOfficer);
   },
 
   async updateHROfficerPermissions(userId: string, allowedActions: AllowedAction[]) {
-    const index = mockHROfficers.findIndex((o) => o.UserID === userId);
-    if (index !== -1) {
-      mockHROfficers[index] = { ...mockHROfficers[index], AllowedActions: allowedActions };
-    }
-    return Promise.resolve(mockHROfficers[index]);
+    const { data: records } = await client.models.Permission.list({
+      filter: { UserID: { eq: userId } },
+    });
+    if (!records || records.length === 0) throw new Error("Officer not found");
+    const { data } = await client.models.Permission.update({
+      id: records[0].id,
+      AllowedActions: allowedActions,
+    });
+    return data;
   },
 
   async deleteHROfficer(userId: string) {
-    mockHROfficers = mockHROfficers.filter((o) => o.UserID !== userId);
-    return Promise.resolve();
+    const { data: records } = await client.models.Permission.list({
+      filter: { UserID: { eq: userId } },
+    });
+    if (!records || records.length === 0) return;
+    await client.models.Permission.delete({ id: records[0].id });
   },
 };

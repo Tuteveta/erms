@@ -1,17 +1,62 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
+/**
+ * ERMS Data Schema
+ * Defines DynamoDB tables for Employee records, documents metadata,
+ * and permission sets. Secured via Cognito user group authorization.
+ */
 const schema = a.schema({
-  Todo: a
+  // ── Employee Records ──────────────────────────────────────────────────
+  Employee: a
     .model({
-      content: a.string(),
+      EmployeeID: a.id().required(),
+      FirstName: a.string().required(),
+      LastName: a.string().required(),
+      Department: a.string().required(),
+      Position: a.string().required(),
+      Email: a.email().required(),
+      Phone: a.phone(),
+      Status: a.enum(["Active", "Inactive"]),
+      CreatedBy: a.string(),
+      // Documents linked via EmployeeID
+      documents: a.hasMany("EmployeeDocument", "EmployeeID"),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [
+      allow.groups(["SuperAdmin", "HRManager"]).to(["create", "read", "update", "delete"]),
+      allow.groups(["HROfficer"]).to(["read"]),
+    ]),
+
+  // ── Employee Documents (S3 metadata) ──────────────────────────────────
+  EmployeeDocument: a
+    .model({
+      DocumentID: a.id().required(),
+      EmployeeID: a.string().required(),
+      FileName: a.string().required(),
+      FileKey: a.string().required(), // S3 object key
+      FileSize: a.integer(),
+      Description: a.string(),
+      UploadedBy: a.string(),
+      // Belongs to Employee
+      employee: a.belongsTo("Employee", "EmployeeID"),
+    })
+    .authorization((allow) => [
+      allow.groups(["SuperAdmin", "HRManager"]).to(["create", "read", "update", "delete"]),
+      allow.groups(["HROfficer"]).to(["read"]),
+    ]),
+
+  // ── Permission Sets ────────────────────────────────────────────────────
+  Permission: a
+    .model({
+      RoleID: a.id().required(),
+      UserID: a.string().required(), // Cognito user sub
+      Email: a.email().required(),
+      Name: a.string(),
+      AllowedActions: a.string().array(), // JSON array of AllowedAction strings
+      AssignedBy: a.string(),
+    })
+    .authorization((allow) => [
+      allow.groups(["SuperAdmin", "HRManager"]).to(["create", "read", "update", "delete"]),
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -19,38 +64,6 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "apiKey",
-    apiKeyAuthorizationMode: {
-      expiresInDays: 30,
-    },
+    defaultAuthorizationMode: "userPool",
   },
 });
-
-/*== STEP 2 ===============================================================
-Go to your frontend source code. From your client-side code, generate a
-Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
-WORK IN THE FRONTEND CODE FILE.)
-
-Using JavaScript or Next.js React Server Components, Middleware, Server 
-Actions or Pages Router? Review how to generate Data clients for those use
-cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
-=========================================================================*/
-
-/*
-"use client"
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-
-const client = generateClient<Schema>() // use this Data client for CRUDL requests
-*/
-
-/*== STEP 3 ===============================================================
-Fetch records from the database and use them in your frontend component.
-(THIS SNIPPET WILL ONLY WORK IN THE FRONTEND CODE FILE.)
-=========================================================================*/
-
-/* For example, in a React component, you can use this snippet in your
-  function's RETURN statement */
-// const { data: todos } = await client.models.Todo.list()
-
-// return <ul>{todos.map(todo => <li key={todo.id}>{todo.content}</li>)}</ul>

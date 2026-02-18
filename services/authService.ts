@@ -14,6 +14,11 @@ import { client } from "@/lib/amplify-client";
 
 export const authService = {
   async signIn(email: string, password: string): Promise<AuthUser> {
+    // Clear any stale / partial Amplify session before attempting sign-in.
+    // In Amplify v6, calling signIn while already authenticated throws
+    // UserAlreadyAuthenticatedException, which would appear as a login failure.
+    try { await amplifySignOut(); } catch { /* no existing session — safe to ignore */ }
+
     const { isSignedIn, nextStep } = await amplifySignIn({ username: email, password });
 
     if (nextStep.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {

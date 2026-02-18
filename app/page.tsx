@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
-  Building2,
   ShieldCheck,
   Users,
-  FileText,
   BarChart3,
   CloudUpload,
   ArrowRight,
@@ -69,16 +68,16 @@ export default function LandingPage() {
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Brand */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-sm">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-gray-900 leading-none">ERMS</p>
-              <p className="text-xs text-muted-foreground leading-none mt-0.5">
-                Employee Record Management System
-              </p>
-            </div>
+          <div className="flex items-center">
+            <Image
+              src="/ict-logo.png"
+              alt="ICT Logo"
+              width={160}
+              height={48}
+              className="h-12 object-contain"
+              style={{ width: "auto" }}
+              priority
+            />
           </div>
 
           {/* Login CTA */}
@@ -185,12 +184,6 @@ export default function LandingPage() {
       {/* ── Footer ─────────────────────────────────────────────── */}
       <footer className="bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-primary">
-              <Building2 className="h-3.5 w-3.5 text-white" />
-            </div>
-            <span className="text-sm font-semibold text-gray-700">ERMS</span>
-          </div>
           <p className="text-xs text-muted-foreground text-center">
             © 2026 Employee Record Management System. All rights reserved.
           </p>

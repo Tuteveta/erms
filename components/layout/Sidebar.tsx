@@ -56,25 +56,23 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="relative z-10 flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground shadow-[1px_0_20px_rgba(0,0,0,0.25)]">
+    <aside className="relative z-10 flex h-full w-64 flex-col bg-white border-r border-border/50 shadow-[2px_0_8px_rgba(0,0,0,0.04)]">
       {/* Logo */}
-      <div className="flex items-center justify-center px-4 py-4 border-b border-sidebar-border/60">
-        <div className="bg-white rounded-lg px-3 py-2">
-          <Image
-            src="/ict-logo.png"
-            alt="ICT Logo"
-            width={140}
-            height={40}
-            className="h-10 object-contain"
-            style={{ width: "auto" }}
-            priority
-          />
-        </div>
+      <div className="flex items-center justify-center px-4 py-4 border-b border-border/60">
+        <Image
+          src="/ict-logo.png"
+          alt="ICT Logo"
+          width={140}
+          height={40}
+          className="h-10 object-contain"
+          style={{ width: "auto" }}
+          priority
+        />
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 px-3 py-4">
-        <p className="px-3 py-2 text-xs font-semibold uppercase tracking-widest text-sidebar-foreground/30 mb-1">
+        <p className="px-3 py-2 text-xs font-semibold uppercase tracking-widest text-foreground/30 mb-1">
           Menu
         </p>
         {visibleItems.map((item) => {
@@ -87,39 +85,39 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 active
-                  ? "bg-white/10 text-white shadow-sm border-l-2 border-primary ml-[-1px] pl-[11px]"
-                  : "text-sidebar-foreground/60 hover:bg-white/5 hover:text-sidebar-foreground"
+                  ? "bg-primary/10 text-primary shadow-sm border-l-2 border-primary ml-[-1px] pl-[11px]"
+                  : "text-foreground/50 hover:bg-black/5 hover:text-foreground"
               )}
             >
               <Icon className={cn("h-4 w-4 shrink-0", active ? "text-primary" : "")} />
               <span>{item.label}</span>
-              {active && <ChevronRight className="ml-auto h-3 w-3 text-sidebar-foreground/50" />}
+              {active && <ChevronRight className="ml-auto h-3 w-3 text-primary/40" />}
             </Link>
           );
         })}
       </nav>
 
       {/* Divider */}
-      <div className="mx-4 h-px bg-sidebar-border/40" />
+      <div className="mx-4 h-px bg-border" />
 
       {/* User Profile & Sign Out */}
       <div className="px-3 py-4 space-y-1">
-        <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
-          <Avatar className="h-8 w-8 ring-2 ring-white/10">
+        <div className="flex items-center gap-3 rounded-xl bg-black/5 px-3 py-2.5">
+          <Avatar className="h-8 w-8 ring-2 ring-black/10">
             <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
               {user ? getInitials(user.name?.split(" ")[0] || user.email[0], user.name?.split(" ")[1] || user.email[1]) : "??"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-white truncate">{user?.name || user?.email}</p>
-            <p className="text-xs text-sidebar-foreground/40 truncate mt-0.5">
+            <p className="text-xs font-semibold text-foreground truncate">{user?.name || user?.email}</p>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">
               {user ? getRoleLabel(user.role) : ""}
             </p>
           </div>
         </div>
         <button
           onClick={signOut}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/50 hover:bg-red-500/10 hover:text-red-400 transition-all duration-150"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all duration-150"
         >
           <LogOut className="h-4 w-4" />
           <span>Sign Out</span>

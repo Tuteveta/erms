@@ -35,7 +35,8 @@ function getSlot(hour: number): TimeSlot {
 function getGreeting(slot: TimeSlot) {
   if (slot === "morning") return "Good Morning";
   if (slot === "afternoon") return "Good Afternoon";
-  return "Good Evening";
+  if (slot === "evening") return "Good Evening";
+  return "Good Night";
 }
 
 function formatDay(): string {

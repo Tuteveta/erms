@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Bell, Search, Sun, Sunset, Moon, Sunrise } from "lucide-react";
+import { Search, Sun, Sunset, Moon, Sunrise } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { NotificationsPanel } from "@/components/layout/NotificationsPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { getRoleLabel } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -308,19 +308,7 @@ export function DashboardHeader({ pageTitle, pageDescription }: DashboardHeaderP
           </div>
 
           {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn("relative h-9 w-9 rounded-lg", cfg.btnClass)}
-          >
-            <Bell className="h-4 w-4" />
-            <span
-              className={cn(
-                "absolute top-1.5 right-1.5 h-2 w-2 rounded-full",
-                cfg.notifDot
-              )}
-            />
-          </Button>
+          <NotificationsPanel btnClass={cfg.btnClass} notifDotClass={cfg.notifDot} />
 
           {/* Role badge */}
           {user && (

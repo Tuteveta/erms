@@ -66,6 +66,23 @@ const schema = a.schema({
       allow.groups(["HROfficer"]).to(["read"]),
     ]),
 
+  // ── Activity / Audit Log ──────────────────────────────────────────────
+  ActivityLog: a
+    .model({
+      LogID: a.id().required(),
+      UserEmail: a.string().required(),
+      UserName: a.string(),
+      Action: a.string().required(),         // e.g. "Employee Created"
+      ResourceType: a.enum(["Employee", "Document", "Leave", "User", "Permission"]),
+      ResourceID: a.string().required(),
+      Description: a.string().required(),   // human-readable summary
+      Details: a.string(),                  // optional JSON / extra info
+    })
+    .authorization((allow) => [
+      allow.groups(["SuperAdmin", "HRManager"]).to(["create", "read", "delete"]),
+      allow.groups(["HROfficer"]).to(["create", "read"]),
+    ]),
+
   // ── Permission Sets ────────────────────────────────────────────────────
   Permission: a
     .model({

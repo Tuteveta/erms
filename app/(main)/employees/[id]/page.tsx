@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { employeeService } from "@/services/employeeService";
 import { documentService } from "@/services/documentService";
 import { leaveService } from "@/services/leaveService";
+import { activityLogService } from "@/services/activityLogService";
 import { Employee, EmployeeDocument, EmployeeLeave, LeaveFormData } from "@/types";
 import { formatDate, getInitials } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -96,14 +97,33 @@ export default function EmployeeProfilePage() {
 
   async function handleLogLeave(formData: LeaveFormData) {
     if (!employee || !user) return;
-    await leaveService.create(employee.EmployeeID, formData, user.email);
+    const record = await leaveService.create(employee.EmployeeID, formData, user.email);
     toast({ title: "Leave recorded", description: "The leave record has been saved." });
+    const empName = `${employee.FirstName} ${employee.LastName}`;
+    activityLogService.log(
+      "Leave Recorded",
+      "Leave",
+      record.LeaveID,
+      `${formData.LeaveType} leave logged for ${empName} (${formData.StartDate} → ${formData.EndDate})`,
+      user.email,
+      user.name
+    );
     await loadData();
   }
 
   async function handleDeleteLeave(leave: EmployeeLeave) {
     await leaveService.delete(leave.id);
     toast({ title: "Leave deleted", description: "The leave record has been removed." });
+    if (employee && user) {
+      activityLogService.log(
+        "Leave Deleted",
+        "Leave",
+        leave.LeaveID,
+        `${leave.LeaveType} leave record removed for employee ${employee.FirstName} ${employee.LastName}`,
+        user.email,
+        user.name
+      );
+    }
     setLeaveRecords((prev) => prev.filter((l) => l.id !== leave.id));
   }
 

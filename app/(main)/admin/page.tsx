@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { authService } from "@/services/authService";
+import { activityLogService } from "@/services/activityLogService";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { AllowedAction } from "@/types";
@@ -99,6 +100,7 @@ export default function AdminPage() {
     try {
       await authService.createHROfficer(newEmail, newName, selectedActions, user?.email || "");
       toast({ title: "HR Officer Created", description: `${newName} has been added.` });
+      activityLogService.log("HR Officer Created", "User", newEmail, `${newName} (${newEmail}) added as HR Officer`, user?.email ?? "", user?.name);
       setShowCreateDialog(false);
       setNewEmail(""); setNewName(""); setSelectedActions(["VIEW_EMPLOYEE"]);
       loadOfficers();
@@ -113,6 +115,7 @@ export default function AdminPage() {
     try {
       await authService.updateHROfficerPermissions(editOfficer.UserID, editOfficer.AllowedActions);
       toast({ title: "Permissions Updated", description: `${editOfficer.Name}'s permissions have been updated.` });
+      activityLogService.log("Permissions Updated", "Permission", editOfficer.UserID, `Permissions updated for ${editOfficer.Name}`, user?.email ?? "", user?.name);
       setEditOfficer(null);
       loadOfficers();
     } finally {
@@ -124,6 +127,7 @@ export default function AdminPage() {
     if (!confirm(`Remove HR Officer ${name}?`)) return;
     await authService.deleteHROfficer(officerId);
     toast({ title: "Officer Removed", description: `${name} has been removed from the system.` });
+    activityLogService.log("HR Officer Removed", "User", officerId, `${name} was removed from the system`, user?.email ?? "", user?.name);
     loadOfficers();
   };
 

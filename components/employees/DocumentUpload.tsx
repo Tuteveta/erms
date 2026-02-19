@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { documentService } from "@/services/documentService";
+import { activityLogService } from "@/services/activityLogService";
 import { formatDate, formatFileSize } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
@@ -51,8 +52,16 @@ export function DocumentUpload({
     if (!selectedFile || !user) return;
     setUploading(true);
     try {
-      await documentService.upload(selectedFile, employeeId, description, user.email);
+      const doc = await documentService.upload(selectedFile, employeeId, description, user.email);
       toast({ title: "Document Uploaded", description: `${selectedFile.name} has been uploaded.` });
+      activityLogService.log(
+        "Document Uploaded",
+        "Document",
+        doc.DocumentID,
+        `${selectedFile.name} uploaded for employee ${employeeId}`,
+        user.email,
+        user.name
+      );
       setSelectedFile(null);
       setDescription("");
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -68,6 +77,14 @@ export function DocumentUpload({
     try {
       await documentService.delete(doc.DocumentID);
       toast({ title: "Document Removed", description: `${doc.FileName} has been deleted.` });
+      activityLogService.log(
+        "Document Deleted",
+        "Document",
+        doc.DocumentID,
+        `${doc.FileName} removed for employee ${employeeId}`,
+        user?.email ?? "",
+        user?.name
+      );
       onUpdate();
     } catch {
       toast({ title: "Error", description: "Could not delete document.", variant: "destructive" });

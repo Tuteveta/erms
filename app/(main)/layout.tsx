@@ -3,9 +3,30 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { SidebarProvider, useSidebar } from "@/components/layout/SidebarContext";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+
+// Inner shell that can consume the sidebar context
+function LayoutShell({ children }: { children: React.ReactNode }) {
+  const { open, close } = useSidebar();
+  return (
+    <div className="flex h-screen overflow-hidden bg-slate-100">
+      {/* Mobile backdrop — closes sidebar on tap-outside */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={close}
+        />
+      )}
+      <Sidebar />
+      <main className="flex-1 overflow-y-auto min-w-0">
+        {children}
+      </main>
+    </div>
+  );
+}
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -31,12 +52,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   if (!user) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-100">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
+    <SidebarProvider>
+      <LayoutShell>{children}</LayoutShell>
       <Toaster />
-    </div>
+    </SidebarProvider>
   );
 }

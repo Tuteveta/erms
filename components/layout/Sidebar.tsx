@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { getRoleLabel } from "@/lib/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
+import { useSidebar } from "@/components/layout/SidebarContext";
 
 const navItems = [
   {
@@ -50,15 +52,27 @@ export function Sidebar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const { is } = usePermissions();
+  const { open, close } = useSidebar();
 
   const visibleItems = navItems.filter((item) =>
     item.roles.some((role) => is(role as any))
   );
 
   return (
-    <aside className="relative z-10 flex h-full w-64 flex-col bg-white border-r border-border/50 shadow-[2px_0_8px_rgba(0,0,0,0.04)]">
-      {/* Logo */}
-      <div className="flex items-center justify-center px-4 py-4 border-b border-border/60">
+    <aside
+      className={cn(
+        // Base layout
+        "flex flex-col w-64 shrink-0 bg-white border-r border-border/50",
+        // Mobile: fixed overlay that slides in/out
+        "fixed top-0 left-0 h-full z-50 transition-transform duration-300 ease-in-out shadow-xl",
+        // Desktop: back in normal flow, always visible
+        "lg:static lg:z-10 lg:shadow-[2px_0_8px_rgba(0,0,0,0.04)] lg:translate-x-0",
+        // Mobile open/closed state
+        open ? "translate-x-0" : "-translate-x-full"
+      )}
+    >
+      {/* Logo + mobile close button */}
+      <div className="flex items-center justify-between px-4 py-4 border-b border-border/60">
         <Image
           src="/ict-logo.png"
           alt="ICT Logo"
@@ -68,6 +82,14 @@ export function Sidebar() {
           style={{ width: "auto" }}
           priority
         />
+        {/* Close button — mobile only */}
+        <button
+          onClick={close}
+          className="lg:hidden rounded-lg p-1.5 text-foreground/50 hover:bg-black/5 hover:text-foreground transition-colors"
+          aria-label="Close menu"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -82,6 +104,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={close}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 active

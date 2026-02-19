@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, Sun, Sunset, Moon, Sunrise } from "lucide-react";
+import { Search, Sun, Sunset, Moon, Sunrise, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { NotificationsPanel } from "@/components/layout/NotificationsPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { getRoleLabel } from "@/lib/auth";
+import { useSidebar } from "@/components/layout/SidebarContext";
 
 // ── Types ────────────────────────────────────────────────────
 type TimeSlot = "morning" | "afternoon" | "evening" | "night";
@@ -49,6 +50,7 @@ interface DashboardHeaderProps {
 // ── Component ────────────────────────────────────────────────
 export function DashboardHeader({ pageTitle, pageDescription }: DashboardHeaderProps = {}) {
   const { user } = useAuth();
+  const { toggle } = useSidebar();
   const [slot, setSlot] = useState<TimeSlot | null>(null);
   const [day, setDay] = useState("");
 
@@ -74,8 +76,17 @@ export function DashboardHeader({ pageTitle, pageDescription }: DashboardHeaderP
       {/* ── Main content ─────────────────────────────────────── */}
       <div className="flex items-center justify-between px-6 py-4 gap-4">
 
-        {/* Left — Greeting */}
+        {/* Left — Hamburger (mobile) + Greeting */}
         <div className="flex items-center gap-3 min-w-0">
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={toggle}
+            className="lg:hidden shrink-0 rounded-lg p-2 text-foreground/60 hover:bg-black/5 hover:text-foreground transition-colors"
+            aria-label="Toggle menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+
           {/* Time icon badge */}
           <div className="shrink-0 rounded-xl p-2 bg-primary/8 border border-primary/12">
             <Icon className="h-5 w-5 text-primary" strokeWidth={1.7} />
